@@ -1,0 +1,182 @@
+local UserInputService = game:GetService("UserInputService")
+
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CosmicGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 320, 0, 160)
+frame.Position = UDim2.new(0.5, -160, 0.5, -80)
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- black background
+frame.BorderSizePixel = 0
+frame.Parent = screenGui
+
+-- Outer pink border using another frame (thinner now: 2 pixels)
+local border = Instance.new("Frame")
+border.Name = "Border"
+border.Size = UDim2.new(1, 4, 1, 4) -- thinner border (2 pixels thick)
+border.Position = UDim2.new(0, -2, 0, -2)
+border.BackgroundColor3 = Color3.fromRGB(255, 20, 147) -- bright pink border
+border.BorderSizePixel = 0
+border.ZIndex = 0
+border.Parent = frame
+
+local uiCornerBorder = Instance.new("UICorner")
+uiCornerBorder.CornerRadius = UDim.new(0, 16)
+uiCornerBorder.Parent = border
+
+local uiCornerFrame = Instance.new("UICorner")
+uiCornerFrame.CornerRadius = UDim.new(0, 16)
+uiCornerFrame.Parent = frame
+
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 36)
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- black background
+titleBar.BorderSizePixel = 0
+titleBar.Parent = frame
+
+local uiCornerTitle = Instance.new("UICorner")
+uiCornerTitle.CornerRadius = UDim.new(0, 16)
+uiCornerTitle.Parent = titleBar
+
+-- Icon on title bar (use any decal/asset you want; here I'll create an ImageLabel placeholder)
+local icon = Instance.new("ImageLabel")
+icon.Size = UDim2.new(0, 28, 0, 28)
+icon.Position = UDim2.new(0, 10, 0.5, -14)
+icon.BackgroundTransparency = 1
+icon.Image = "rbxassetid://6023426912" -- example cosmic/star icon
+icon.Parent = titleBar
+
+-- Title label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "Cosmic GUI"
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- white
+titleLabel.BackgroundTransparency = 1
+titleLabel.Size = UDim2.new(1, -100, 1, 0)
+titleLabel.Position = UDim2.new(0, 48, 0, 0)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- Minimize button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Text = "-"
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.TextSize = 24
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+minimizeButton.BorderSizePixel = 0
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(1, -70, 0, 3)
+minimizeButton.Parent = titleBar
+
+local minUICorner = Instance.new("UICorner")
+minUICorner.CornerRadius = UDim.new(0, 6)
+minUICorner.Parent = minimizeButton
+
+-- Close button
+local closeButton = Instance.new("TextButton")
+closeButton.Text = "x"
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 24
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0) -- red text
+closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+closeButton.BorderSizePixel = 0
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 3)
+closeButton.Parent = titleBar
+
+local closeUICorner = Instance.new("UICorner")
+closeUICorner.CornerRadius = UDim.new(0, 6)
+closeUICorner.Parent = closeButton
+
+-- Launch button
+local launchButton = Instance.new("TextButton")
+launchButton.Text = "🚀 Launch"
+launchButton.Font = Enum.Font.GothamBold
+launchButton.TextSize = 20
+launchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+launchButton.BackgroundColor3 = Color3.fromRGB(77, 0, 153) -- dark purple
+launchButton.BorderSizePixel = 0
+launchButton.Size = UDim2.new(0, 160, 0, 44)
+launchButton.Position = UDim2.new(0.5, -80, 0.5, 10)
+launchButton.Parent = frame
+
+local launchUICorner = Instance.new("UICorner")
+launchUICorner.CornerRadius = UDim.new(0, 12)
+launchUICorner.Parent = launchButton
+
+-- Variables for minimize toggle
+local minimized = false
+local originalSize = frame.Size
+
+local function toggleMinimize()
+	minimized = not minimized
+	if minimized then
+		frame.Size = UDim2.new(0, 320, 0, 40)
+		launchButton.Visible = false
+	else
+		frame.Size = originalSize
+		launchButton.Visible = true
+	end
+end
+
+minimizeButton.MouseButton1Click:Connect(toggleMinimize)
+closeButton.MouseButton1Click:Connect(function()
+	frame.Visible = false
+end)
+
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+	if gameProcessed then return end
+	if input.KeyCode == Enum.KeyCode.LeftControl then
+		toggleMinimize()
+	end
+end)
+
+launchButton.MouseButton1Click:Connect(function()
+	print("Launch clicked!")
+	-- Your launch function here
+end)
+
+-- Draggable functionality for titleBar
+local dragging = false
+local dragInput, mousePos, framePos
+
+local function update(input)
+	local delta = input.Position - mousePos
+	frame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X,
+		framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+end
+
+titleBar.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragging = true
+		mousePos = input.Position
+		framePos = frame.Position
+
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragging = false
+			end
+		end)
+	end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseMovement then
+		dragInput = input
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if input == dragInput and dragging then
+		update(input)
+	end
+end)
