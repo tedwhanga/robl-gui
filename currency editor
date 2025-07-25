@@ -1,0 +1,223 @@
+-- This script will create a draggable UI with buttons to modify Butter, Milkshakes, and Chocolate values
+
+local player = game.Players.LocalPlayer  -- Reference to the player running the script
+
+-- Ensure the leaderstats folder and the values exist
+local function setupLeaderstats()
+    -- Wait for leaderstats to exist and set up Butter, Milkshakes, and Chocolate
+    local leaderstats = player:WaitForChild("leaderstats", 10)
+    if not leaderstats then
+        -- Create leaderstats folder if it doesn't exist
+        leaderstats = Instance.new("Folder")
+        leaderstats.Name = "leaderstats"
+        leaderstats.Parent = player
+    end
+    
+    -- Create Butter, Milkshakes, and Chocolate if they don't exist
+    local butter = leaderstats:FindFirstChild("Butter")
+    if not butter then
+        butter = Instance.new("NumberValue")
+        butter.Name = "Butter"
+        butter.Value = 0  -- Initial value
+        butter.Parent = leaderstats
+    end
+    
+    local milkshakes = leaderstats:FindFirstChild("Milkshakes")
+    if not milkshakes then
+        milkshakes = Instance.new("NumberValue")
+        milkshakes.Name = "Milkshakes"
+        milkshakes.Value = 0  -- Initial value
+        milkshakes.Parent = leaderstats
+    end
+
+    local chocolate = leaderstats:FindFirstChild("Chocolate")
+    if not chocolate then
+        chocolate = Instance.new("NumberValue")
+        chocolate.Name = "Chocolate"
+        chocolate.Value = 0  -- Initial value
+        chocolate.Parent = leaderstats
+    end
+end
+
+-- Set up leaderstats and values
+setupLeaderstats()
+
+-- Create ScreenGui and set its properties
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = player:WaitForChild("PlayerGui")  -- Place it in the PlayerGui
+
+-- Create the background frame for the GUI
+local background = Instance.new("Frame")
+background.Size = UDim2.new(0, 400, 0, 250)  -- Set size of the background frame
+background.Position = UDim2.new(0.5, -200, 0.5, -125)  -- Center it on the screen
+background.BackgroundColor3 = Color3.fromRGB(30, 30, 30)  -- Dark background color
+background.BackgroundTransparency = 0.5  -- Make the background slightly transparent
+background.BorderSizePixel = 4  -- Border thickness
+background.BorderColor3 = Color3.fromRGB(255, 105, 180)  -- Pink border color
+background.Parent = screenGui
+
+-- Create the title for the UI
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0, 400, 0, 50)
+title.Position = UDim2.new(0, 0, 0, 0)
+title.Text = "Whanga UI"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+title.TextSize = 24
+title.TextStrokeTransparency = 0.8
+title.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+title.BackgroundTransparency = 1
+title.Parent = background
+
+-- Create the "Modify Butter" button
+local butterButton = Instance.new("TextButton")
+butterButton.Size = UDim2.new(0, 200, 0, 50)
+butterButton.Position = UDim2.new(0.5, -100, 0.2, 0)
+butterButton.Text = "Modify Butter"
+butterButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+butterButton.TextSize = 20
+butterButton.BackgroundColor3 = Color3.fromRGB(96, 57, 220)  -- Purple background
+butterButton.BackgroundTransparency = 0.2
+butterButton.BorderSizePixel = 2
+butterButton.BorderColor3 = Color3.fromRGB(255, 255, 255)  -- White border
+butterButton.Parent = background
+
+-- Create the "Modify Milkshakes" button
+local milkshakesButton = Instance.new("TextButton")
+milkshakesButton.Size = UDim2.new(0, 200, 0, 50)
+milkshakesButton.Position = UDim2.new(0.5, -100, 0.4, 0)
+milkshakesButton.Text = "Modify Milkshakes"
+milkshakesButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+milkshakesButton.TextSize = 20
+milkshakesButton.BackgroundColor3 = Color3.fromRGB(30, 144, 255)  -- Blue background
+milkshakesButton.BackgroundTransparency = 0.2
+milkshakesButton.BorderSizePixel = 2
+milkshakesButton.BorderColor3 = Color3.fromRGB(255, 255, 255)  -- White border
+milkshakesButton.Parent = background
+
+-- Create the "Modify Chocolate" button
+local chocolateButton = Instance.new("TextButton")
+chocolateButton.Size = UDim2.new(0, 200, 0, 50)
+chocolateButton.Position = UDim2.new(0.5, -100, 0.6, 0)
+chocolateButton.Text = "Modify Chocolate"
+chocolateButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+chocolateButton.TextSize = 20
+chocolateButton.BackgroundColor3 = Color3.fromRGB(255, 87, 34)  -- Orange background
+chocolateButton.BackgroundTransparency = 0.2
+chocolateButton.BorderSizePixel = 2
+chocolateButton.BorderColor3 = Color3.fromRGB(255, 255, 255)  -- White border
+chocolateButton.Parent = background
+
+-- Create the "Exit" button (X to close the UI)
+local exitButton = Instance.new("TextButton")
+exitButton.Size = UDim2.new(0, 50, 0, 50)
+exitButton.Position = UDim2.new(1, -60, 0, -10)
+exitButton.Text = "X"
+exitButton.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
+exitButton.TextSize = 30
+exitButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)  -- Red background
+exitButton.BackgroundTransparency = 0.5
+exitButton.BorderSizePixel = 0  -- No border
+exitButton.Parent = background
+
+-- Function to close the GUI when Exit button is clicked
+exitButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()  -- Destroy the entire GUI
+end)
+
+-- Draggable functionality for the whole frame
+local dragging = false
+local dragInput, mousePos, objPos
+
+-- Start dragging
+local function onDragStart(input)
+    dragging = true
+    dragInput = input
+    mousePos = input.Position
+    objPos = background.Position
+end
+
+-- Drag movement
+local function onDragMove(input)
+    if dragging then
+        local delta = input.Position - mousePos
+        background.Position = UDim2.new(objPos.X.Scale, objPos.X.Offset + delta.X, objPos.Y.Scale, objPos.Y.Offset + delta.Y)
+    end
+end
+
+-- Stop dragging
+local function onDragEnd(input)
+    dragging = false
+end
+
+-- Connect drag events to the screen GUI
+background.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        onDragStart(input)
+    end
+end)
+
+background.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        onDragMove(input)
+    end
+end)
+
+background.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        onDragEnd(input)
+    end
+end)
+
+-- Function to modify Butter value (add 1 to Butter)
+local function modifyButter()
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local butter = leaderstats:FindFirstChild("Butter")
+        if butter then
+            butter.Value = butter.Value + 99999999999999999999999999999999999999999999999999999999999999999999  -- Add 1 to Butter
+            print(player.Name .. "'s new Butter value: " .. butter.Value)
+        else
+            warn("Butter value not found!")
+        end
+    else
+        warn("leaderstats folder not found!")
+    end
+end
+
+-- Function to modify Milkshakes value (add 1 to Milkshakes)
+local function modifyMilkshakes()
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local milkshakes = leaderstats:FindFirstChild("Milkshakes")
+        if milkshakes then
+            milkshakes.Value = milkshakes.Value + 99999999999999999999999999999999999999999999999999999999999999999999  -- Add 1 to Milkshakes
+            print(player.Name .. "'s new Milkshakes value: " .. milkshakes.Value)
+        else
+            warn("Milkshakes value not found!")
+        end
+    else
+        warn("leaderstats folder not found!")
+    end
+end
+
+-- Function to modify Chocolate value (add 1 to Chocolate)
+local function modifyChocolate()
+    local leaderstats = player:FindFirstChild("leaderstats")
+    if leaderstats then
+        local chocolate = leaderstats:FindFirstChild("Chocolate")
+        if chocolate then
+            chocolate.Value = chocolate.Value + 99999999999999999999999999999999999999999999999999999999999999999999  -- Add 1 to Chocolate
+            print(player.Name .. "'s new Chocolate value: " .. chocolate.Value)
+        else
+            warn("Chocolate value not found!")
+        end
+    else
+        warn("leaderstats folder not found!")
+    end
+end
+
+-- Connect buttons to their respective functions
+butterButton.MouseButton1Click:Connect(modifyButter)
+milkshakesButton.MouseButton1Click:Connect(modifyMilkshakes)
+chocolateButton.MouseButton1Click:Connect(modifyChocolate)
