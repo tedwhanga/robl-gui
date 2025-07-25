@@ -1,0 +1,116 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Reference the Heads folder in the workspace (Make sure all Milk, Cheese, Chocolate, and Milkshake parts are here)
+local headsFolder = workspace:WaitForChild("Heads")  -- All parts are in the 'Heads' folder
+
+-- Create the GUI for the On/Off buttons and Exit button
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")  -- Parent the GUI to the PlayerGui
+
+-- Create the main frame for the GUI
+local frame = Instance.new("Frame")
+frame.Parent = gui
+frame.Size = UDim2.new(0, 200, 0, 250)  -- Increased size to fit all buttons
+frame.Position = UDim2.new(0.5, -100, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.Active = true
+frame.Draggable = true
+frame.ZIndex = 2
+
+-- Function to move all currency parts inside the Heads folder to the player's feet
+local function moveCurrencyParts(currencyName)
+    local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
+    if not rootPart then
+        print("ERROR: HumanoidRootPart not found!")
+        return
+    end
+
+    local footPosition = rootPart.Position - Vector3.new(0, 2, 0)  -- Position near the feet
+    local cheesePosition = rootPart.Position - Vector3.new(0, 3, 0)  -- Lower position for Cheese
+
+    -- Iterate through all parts in the Heads folder and move corresponding currency parts
+    for _, obj in pairs(headsFolder:GetChildren()) do
+        if obj:IsA("BasePart") and obj.Name == currencyName then  -- Check for matching currency parts by name
+            local targetPosition = (currencyName == "Cheese") and cheesePosition or footPosition  -- Lower position for Cheese
+            -- Instantly move the currency part to the player's feet using CFrame
+            obj.CFrame = CFrame.new(targetPosition)
+            print(currencyName .. " part moved to player's feet: " .. obj:GetFullName())  -- Log part movement
+        end
+    end
+end
+
+-- Function to create the On/Off button for each currency
+local function createCurrencyButton(currencyName, positionY)
+    local button = Instance.new("TextButton")
+    button.Parent = frame
+    button.Size = UDim2.new(0, 180, 0, 40)
+    button.Position = UDim2.new(0, 10, 0, positionY)
+    button.Text = "Enable " .. currencyName .. " Magnet"
+    button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 18
+    button.ZIndex = 3
+
+    local magnetEnabled = false  -- Magnet state for this currency
+
+    -- Function to enable the magnet for the specific currency
+    local function enableMagnet()
+        if magnetEnabled then return end
+        magnetEnabled = true
+        button.Text = "Disable " .. currencyName .. " Magnet"  -- Change button text
+        button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)  -- Change button color to red
+        print(currencyName .. " Magnet enabled, moving " .. currencyName .. " parts to the player's feet.")
+
+        -- Continuously move currency parts using the Heartbeat event
+        game:GetService("RunService").Heartbeat:Connect(function()
+            if magnetEnabled then
+                moveCurrencyParts(currencyName)  -- Keep pulling corresponding currency parts to the player's feet
+            end
+        end)
+    end
+
+    -- Function to disable the magnet
+    local function disableMagnet()
+        magnetEnabled = false
+        button.Text = "Enable " .. currencyName .. " Magnet"  -- Change button text back
+        button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)  -- Change button color back to green
+        print(currencyName .. " Magnet Disabled.")
+    end
+
+    -- Toggle the magnet on/off when the button is clicked
+    button.MouseButton1Click:Connect(function()
+        if magnetEnabled then
+            disableMagnet()  -- Disable the magnet if it's enabled
+        else
+            enableMagnet()  -- Enable the magnet if it's disabled
+        end
+    end)
+end
+
+-- Create separate buttons for each currency (Milk, Cheese, Chocolate, Milkshake)
+createCurrencyButton("Milk", 10)
+createCurrencyButton("Cheese", 60)
+createCurrencyButton("Chocolate", 110)
+createCurrencyButton("Milkshake", 160)
+
+-- Create the Exit button to remove the GUI
+local exitButton = Instance.new("TextButton")
+exitButton.Parent = frame
+exitButton.Size = UDim2.new(0, 60, 0, 30)
+exitButton.Position = UDim2.new(1, -70, 1, -40)
+exitButton.Text = "Exit"
+exitButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+exitButton.TextColor3 = Color3.new(1, 1, 1)
+exitButton.Font = Enum.Font.GothamBold
+exitButton.TextSize = 18
+exitButton.ZIndex = 3
+
+-- Exit button functionality to remove GUI
+exitButton.MouseButton1Click:Connect(function()
+    gui:Destroy()  -- Remove the entire GUI when the Exit button is clicked
+    print("UI Removed!")
+end)
+
+print("Currency magnet GUI is running.")
