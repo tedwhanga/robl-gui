@@ -1,24 +1,131 @@
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Reference the Heads folder in the workspace (Make sure all Milk, Cheese, Chocolate, and Milkshake parts are here)
-local headsFolder = workspace:WaitForChild("Heads")  -- All parts are in the 'Heads' folder
-
 -- Create the GUI for the On/Off buttons and Exit button
 local gui = Instance.new("ScreenGui")
-gui.Parent = player:WaitForChild("PlayerGui")  -- Parent the GUI to the PlayerGui
+gui.Parent = player:WaitForChild("PlayerGui")
+gui.Name = "WhangaUI"
 
--- Create the main frame for the GUI
 local frame = Instance.new("Frame")
+frame.Name = "MainFrame"
+frame.Size = UDim2.new(0, 320, 0, 160)  -- Reduced height to match original size
+frame.Position = UDim2.new(0.5, -160, 0.5, -80)  -- Keep position consistent
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+frame.BorderSizePixel = 0
 frame.Parent = gui
-frame.Size = UDim2.new(0, 200, 0, 250)  -- Increased size to fit all buttons
-frame.Position = UDim2.new(0.5, -100, 0.1, 0)
-frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-frame.Active = true
-frame.Draggable = true
-frame.ZIndex = 2
 
--- Function to move all currency parts inside the Heads folder to the player's feet
+-- Outer pink border
+local border = Instance.new("Frame")
+border.Name = "Border"
+border.Size = UDim2.new(1, 4, 1, 4)  -- 2px border thickness
+border.Position = UDim2.new(0, -2, 0, -2)
+border.BackgroundColor3 = Color3.fromRGB(255, 20, 147)  -- Bright pink
+border.BorderSizePixel = 0
+border.ZIndex = 0
+border.Parent = frame
+
+-- Corner radius for the border and frame
+local uiCornerBorder = Instance.new("UICorner")
+uiCornerBorder.CornerRadius = UDim.new(0, 16)
+uiCornerBorder.Parent = border
+
+local uiCornerFrame = Instance.new("UICorner")
+uiCornerFrame.CornerRadius = UDim.new(0, 16)
+uiCornerFrame.Parent = frame
+
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 36)
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = frame
+
+-- Corner radius for the title bar
+local uiCornerTitle = Instance.new("UICorner")
+uiCornerTitle.CornerRadius = UDim.new(0, 16)
+uiCornerTitle.Parent = titleBar
+
+-- Icon on the title bar
+local icon = Instance.new("ImageLabel")
+icon.Size = UDim2.new(0, 28, 0, 28)
+icon.Position = UDim2.new(0, 10, 0.5, -14)
+icon.BackgroundTransparency = 1
+icon.Image = "rbxassetid://6023426912"  -- Cosmic/star icon
+icon.Parent = titleBar
+
+-- Title label
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Text = "Whanga UI"
+titleLabel.Font = Enum.Font.GothamBold
+titleLabel.TextSize = 20
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Size = UDim2.new(1, -100, 1, 0)
+titleLabel.Position = UDim2.new(0, 48, 0, 0)
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+-- Minimize button
+local minimizeButton = Instance.new("TextButton")
+minimizeButton.Text = "-"
+minimizeButton.Font = Enum.Font.GothamBold
+minimizeButton.TextSize = 24
+minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+minimizeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+minimizeButton.BorderSizePixel = 0
+minimizeButton.Size = UDim2.new(0, 30, 0, 30)
+minimizeButton.Position = UDim2.new(1, -70, 0, 3)
+minimizeButton.Parent = titleBar
+
+local minUICorner = Instance.new("UICorner")
+minUICorner.CornerRadius = UDim.new(0, 6)
+minUICorner.Parent = minimizeButton
+
+-- Close button
+local closeButton = Instance.new("TextButton")
+closeButton.Text = "x"
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 24
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)  -- Red text
+closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+closeButton.BorderSizePixel = 0
+closeButton.Size = UDim2.new(0, 30, 0, 30)
+closeButton.Position = UDim2.new(1, -35, 0, 3)
+closeButton.Parent = titleBar
+
+local closeUICorner = Instance.new("UICorner")
+closeUICorner.CornerRadius = UDim.new(0, 6)
+closeUICorner.Parent = closeButton
+
+-- Draggable functionality
+local dragging = false
+local dragInput, dragStart, startPos
+
+-- Function to start dragging
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+-- Function to stop dragging
+titleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+-- Update the position while dragging
+game:GetService("UserInputService").InputChanged:Connect(function(input)
+    if dragging then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Function to move currency parts to the player's feet
 local function moveCurrencyParts(currencyName)
     local rootPart = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
     if not rootPart then
@@ -26,47 +133,62 @@ local function moveCurrencyParts(currencyName)
         return
     end
 
-    local footPosition = rootPart.Position - Vector3.new(0, 2, 0)  -- Position near the feet
-    local cheesePosition = rootPart.Position - Vector3.new(0, 3, 0)  -- Lower position for Cheese
+    local footPosition = rootPart.Position - Vector3.new(0, 2, 0)
+    local cheesePosition = rootPart.Position - Vector3.new(0, 3, 0)
 
-    -- Iterate through all parts in the Heads folder and move corresponding currency parts
-    for _, obj in pairs(headsFolder:GetChildren()) do
-        if obj:IsA("BasePart") and obj.Name == currencyName then  -- Check for matching currency parts by name
-            local targetPosition = (currencyName == "Cheese") and cheesePosition or footPosition  -- Lower position for Cheese
-            -- Instantly move the currency part to the player's feet using CFrame
+    -- Move currency parts to the player's feet
+    local partsFound = false
+    for _, obj in pairs(workspace:WaitForChild("Heads"):GetChildren()) do
+        if obj:IsA("BasePart") and obj.Name == currencyName then
+            partsFound = true
+            local targetPosition = (currencyName == "Cheese") and cheesePosition or footPosition
             obj.CFrame = CFrame.new(targetPosition)
-            print(currencyName .. " part moved to player's feet: " .. obj:GetFullName())  -- Log part movement
+            print(currencyName .. " part moved to player's feet: " .. obj:GetFullName())
         end
+    end
+
+    -- If no parts were found for the currency
+    if not partsFound then
+        print("No " .. currencyName .. " parts found in the workspace!")
     end
 end
 
--- Function to create the On/Off button for each currency
-local function createCurrencyButton(currencyName, positionY)
+-- Create and align buttons centrally inside the black background
+local milkButton, cheeseButton
+
+local function createCurrencyButton(currencyName)
     local button = Instance.new("TextButton")
     button.Parent = frame
-    button.Size = UDim2.new(0, 180, 0, 40)
-    button.Position = UDim2.new(0, 10, 0, positionY)
     button.Text = "Enable " .. currencyName .. " Magnet"
-    button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundColor3 = Color3.fromRGB(77, 0, 153)  -- Purple color
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)  -- White text
     button.Font = Enum.Font.GothamBold
-    button.TextSize = 18
+    button.TextSize = 20  -- Matching the text size from the main script
     button.ZIndex = 3
 
-    local magnetEnabled = false  -- Magnet state for this currency
+    -- Set button size and center it
+    button.Size = UDim2.new(0, 300, 0, 40)  -- Static size for simplicity
+    button.Position = UDim2.new(0.5, -150, 0, -70 + (60 * (#frame:GetChildren() - 2)))  -- Adjusting vertical spacing for better alignment
 
-    -- Function to enable the magnet for the specific currency
+    -- UICorner for rounded corners of the button
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 12)
+    buttonCorner.Parent = button
+
+    local magnetEnabled = false
+
+    -- Function to enable the magnet for this currency
     local function enableMagnet()
         if magnetEnabled then return end
         magnetEnabled = true
-        button.Text = "Disable " .. currencyName .. " Magnet"  -- Change button text
-        button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)  -- Change button color to red
+        button.Text = "Disable " .. currencyName .. " Magnet"
+        button.BackgroundColor3 = Color3.fromRGB(0, 175, 0)  -- Change color to green when enabled
         print(currencyName .. " Magnet enabled, moving " .. currencyName .. " parts to the player's feet.")
 
-        -- Continuously move currency parts using the Heartbeat event
+        -- Continuously move the parts using Heartbeat event
         game:GetService("RunService").Heartbeat:Connect(function()
             if magnetEnabled then
-                moveCurrencyParts(currencyName)  -- Keep pulling corresponding currency parts to the player's feet
+                moveCurrencyParts(currencyName)
             end
         end)
     end
@@ -74,43 +196,45 @@ local function createCurrencyButton(currencyName, positionY)
     -- Function to disable the magnet
     local function disableMagnet()
         magnetEnabled = false
-        button.Text = "Enable " .. currencyName .. " Magnet"  -- Change button text back
-        button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)  -- Change button color back to green
+        button.Text = "Enable " .. currencyName .. " Magnet"
+        button.BackgroundColor3 = Color3.fromRGB(77, 0, 153)  -- Reset color to purple
         print(currencyName .. " Magnet Disabled.")
     end
 
     -- Toggle the magnet on/off when the button is clicked
     button.MouseButton1Click:Connect(function()
         if magnetEnabled then
-            disableMagnet()  -- Disable the magnet if it's enabled
+            disableMagnet()
         else
-            enableMagnet()  -- Enable the magnet if it's disabled
+            enableMagnet()
         end
     end)
+
+    return button  -- Return button to manage later
 end
 
--- Create separate buttons for each currency (Milk, Cheese, Chocolate, Milkshake)
-createCurrencyButton("Milk", 10)
-createCurrencyButton("Cheese", 60)
-createCurrencyButton("Chocolate", 110)
-createCurrencyButton("Milkshake", 160)
+-- Minimize functionality
+local minimized = false
+local originalSize = frame.Size
 
--- Create the Exit button to remove the GUI
-local exitButton = Instance.new("TextButton")
-exitButton.Parent = frame
-exitButton.Size = UDim2.new(0, 60, 0, 30)
-exitButton.Position = UDim2.new(1, -70, 1, -40)
-exitButton.Text = "Exit"
-exitButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
-exitButton.TextColor3 = Color3.new(1, 1, 1)
-exitButton.Font = Enum.Font.GothamBold
-exitButton.TextSize = 18
-exitButton.ZIndex = 3
+local function toggleMinimize()
+    minimized = not minimized
+    frame.Size = minimized and UDim2.new(0, 320, 0, 40) or originalSize
 
--- Exit button functionality to remove GUI
-exitButton.MouseButton1Click:Connect(function()
-    gui:Destroy()  -- Remove the entire GUI when the Exit button is clicked
-    print("UI Removed!")
+    -- Toggle visibility of Milk and Cheese buttons
+    milkButton.Visible = not minimized
+    cheeseButton.Visible = not minimized
+end
+
+minimizeButton.MouseButton1Click:Connect(toggleMinimize)
+closeButton.MouseButton1Click:Connect(function()
+    frame.Visible = false
 end)
 
-print("Currency magnet GUI is running.")
+-- Create the buttons, only Milk and Cheese now, and store them
+milkButton = createCurrencyButton("Milk")
+cheeseButton = createCurrencyButton("Cheese")
+
+-- Initially hide the buttons when minimized
+milkButton.Visible = true
+cheeseButton.Visible = true
