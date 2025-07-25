@@ -1,0 +1,170 @@
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+
+-- Reference the Heads folder (already contains Milk, Cheese, etc.)
+local headsFolder = workspace:WaitForChild("Heads")
+
+-- Create the GUI for the On/Off buttons and Exit button
+local gui = Instance.new("ScreenGui")
+gui.Parent = player:WaitForChild("PlayerGui")
+
+-- Create the main frame for the GUI
+local frame = Instance.new("Frame")
+frame.Parent = gui
+frame.Size = UDim2.new(0, 200, 0, 200)  -- Adjust size to fit all buttons
+frame.Position = UDim2.new(0.5, -100, 0.1, 0)
+frame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+frame.Active = true
+frame.Draggable = true
+frame.ZIndex = 2
+
+-- Create the labels for currency counts
+local currencyLabel = Instance.new("TextLabel")
+currencyLabel.Parent = gui
+currencyLabel.Size = UDim2.new(0, 200, 0, 50)
+currencyLabel.Position = UDim2.new(0, 10, 0, 10)
+currencyLabel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+currencyLabel.TextColor3 = Color3.new(1, 1, 1)
+currencyLabel.TextSize = 18
+currencyLabel.Font = Enum.Font.GothamBold
+currencyLabel.Text = "Currency: 0"
+currencyLabel.ZIndex = 3
+
+-- Function to update the currency count on the UI
+local function updateCurrencyUI(currencyName)
+    -- Count the number of currency parts in the workspace
+    local count = 0
+    for _, part in pairs(workspace:GetChildren()) do
+        if part:IsA("BasePart") and part.Name == currencyName then
+            count = count + 1
+        end
+    end
+
+    -- Update the label based on the currency name
+    currencyLabel.Text = currencyName .. ": " .. count
+end
+
+-- Fixed spawn position (adjust this as needed)
+local fixedSpawnPosition = Vector3.new(-134.103, 112.550, -210.897)  -- Replace with your desired location
+
+-- Function to spawn currency at a fixed location below the ground
+local function spawnCurrency(currencyName)
+    local currencyPart = headsFolder:FindFirstChild(currencyName)
+    if not currencyPart then
+        print("ERROR: " .. currencyName .. " part not found in Heads folder!")
+        return
+    end
+
+    -- Clone the part and set the spawn position at the fixed location
+    local partClone = currencyPart:Clone()
+    partClone.Position = fixedSpawnPosition  -- Set spawn position at fixed coordinates
+    partClone.Parent = workspace
+    partClone.Anchored = false  -- Allow the part to move (not anchored)
+    partClone.CanCollide = true  -- Make it solid and collectible
+
+    -- Move the part towards the player's feet
+    local function movePartToFeet()
+        -- Get the player's character and lower part (feet)
+        local lowerTorso = player.Character:WaitForChild("LowerTorso")
+        local feetPosition = lowerTorso.Position - Vector3.new(0, 2, 0)  -- Adjusting the position to be near feet
+
+        -- Only move the part if it's not close enough to the player
+        local distance = (feetPosition - partClone.Position).Magnitude
+        if distance > 1 then  -- Only move if part is more than 1 stud away from feet
+            -- Lerp smoothly towards feet
+            partClone.CFrame = CFrame.new(feetPosition)
+        end
+    end
+
+    -- Call move once to place it near the feet
+    movePartToFeet()
+
+    -- Add a Touched event to detect when the player picks up the part
+    partClone.Touched:Connect(function(hit)
+        local character = hit.Parent
+        local humanoid = character:FindFirstChildOfClass("Humanoid")
+
+        -- Check if the player touched the currency part
+        if humanoid and character == player.Character then
+            -- Destroy the part after collection
+            partClone:Destroy()
+
+            -- Update the UI to reflect the new count for this currency
+            updateCurrencyUI(currencyName)
+        end
+    end)
+end
+
+-- Function to create the On/Off button for each currency
+local function createCurrencyButton(currencyName, positionY)
+    local button = Instance.new("TextButton")
+    button.Parent = frame
+    button.Size = UDim2.new(0, 180, 0, 40)
+    button.Position = UDim2.new(0, 10, 0, positionY)
+    button.Text = "Enable " .. currencyName .. " Spawning"
+    button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 18
+    button.ZIndex = 3
+
+    local spawningEnabled = false  -- Spawning state for this currency
+
+    -- Function to enable the spawning for the specific currency
+    local function enableSpawning()
+        if spawningEnabled then return end
+        spawningEnabled = true
+        button.Text = "Disable " .. currencyName .. " Spawning"
+        button.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+
+        -- Continuously spawn currency parts
+        RunService.Heartbeat:Connect(function()
+            if spawningEnabled then
+                spawnCurrency(currencyName)
+            end
+        end)
+    end
+
+    -- Function to disable the spawning
+    local function disableSpawning()
+        spawningEnabled = false
+        button.Text = "Enable " .. currencyName .. " Spawning"
+        button.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+    end
+
+    -- Toggle the spawning on/off when the button is clicked
+    button.MouseButton1Click:Connect(function()
+        if spawningEnabled then
+            disableSpawning()
+        else
+            enableSpawning()
+        end
+    end)
+end
+
+-- Create separate buttons for each currency (Milk, Cheese, Chocolate)
+createCurrencyButton("Milk", 10)
+createCurrencyButton("Cheese", 60)
+createCurrencyButton("Chocolate", 110)
+
+-- Create the Exit button to remove the GUI
+local exitButton = Instance.new("TextButton")
+exitButton.Parent = frame
+exitButton.Size = UDim2.new(0, 60, 0, 30)
+exitButton.Position = UDim2.new(1, -70, 1, -40)
+exitButton.Text = "Exit"
+exitButton.BackgroundColor3 = Color3.fromRGB(170, 0, 0)
+exitButton.TextColor3 = Color3.new(1, 1, 1)
+exitButton.Font = Enum.Font.GothamBold
+exitButton.TextSize = 18
+exitButton.ZIndex = 3
+
+-- Exit button functionality to remove GUI
+exitButton.MouseButton1Click:Connect(function()
+    gui:Destroy()  -- Remove the entire GUI when the Exit button is clicked
+    print("UI Removed!")
+end)
+
+print("Currency spawning GUI is running.")
