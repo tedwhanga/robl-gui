@@ -1,31 +1,32 @@
 local UserInputService = game:GetService("UserInputService")
-
 local player = game.Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
+-- Create the main GUI elements
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "CosmicGUI"
+screenGui.Name = "WhangaUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
 local frame = Instance.new("Frame")
 frame.Name = "MainFrame"
-frame.Size = UDim2.new(0, 320, 0, 160)
-frame.Position = UDim2.new(0.5, -160, 0.5, -80)
-frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- black background
+frame.Size = UDim2.new(0, 320, 0, 160)  -- Reduced height to match original size
+frame.Position = UDim2.new(0.5, -160, 0.5, -80)  -- Keep position consistent
+frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
 
--- Outer pink border using another frame (thinner now: 2 pixels)
+-- Outer pink border
 local border = Instance.new("Frame")
 border.Name = "Border"
-border.Size = UDim2.new(1, 4, 1, 4) -- thinner border (2 pixels thick)
+border.Size = UDim2.new(1, 4, 1, 4)  -- 2px border thickness
 border.Position = UDim2.new(0, -2, 0, -2)
-border.BackgroundColor3 = Color3.fromRGB(255, 20, 147) -- bright pink border
+border.BackgroundColor3 = Color3.fromRGB(255, 20, 147)  -- Bright pink
 border.BorderSizePixel = 0
 border.ZIndex = 0
 border.Parent = frame
 
+-- Corner radius for the border and frame
 local uiCornerBorder = Instance.new("UICorner")
 uiCornerBorder.CornerRadius = UDim.new(0, 16)
 uiCornerBorder.Parent = border
@@ -37,28 +38,29 @@ uiCornerFrame.Parent = frame
 -- Title bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 36)
-titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0) -- black background
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 titleBar.BorderSizePixel = 0
 titleBar.Parent = frame
 
+-- Corner radius for the title bar
 local uiCornerTitle = Instance.new("UICorner")
 uiCornerTitle.CornerRadius = UDim.new(0, 16)
 uiCornerTitle.Parent = titleBar
 
--- Icon on title bar (use any decal/asset you want; here I'll create an ImageLabel placeholder)
+-- Icon on the title bar
 local icon = Instance.new("ImageLabel")
 icon.Size = UDim2.new(0, 28, 0, 28)
 icon.Position = UDim2.new(0, 10, 0.5, -14)
 icon.BackgroundTransparency = 1
-icon.Image = "rbxassetid://6023426912" -- example cosmic/star icon
+icon.Image = "rbxassetid://6023426912"  -- Cosmic/star icon
 icon.Parent = titleBar
 
 -- Title label
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Text = "Cosmic GUI"
+titleLabel.Text = "Whanga UI"
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextSize = 20
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255) -- white
+titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.BackgroundTransparency = 1
 titleLabel.Size = UDim2.new(1, -100, 1, 0)
 titleLabel.Position = UDim2.new(0, 48, 0, 0)
@@ -86,7 +88,7 @@ local closeButton = Instance.new("TextButton")
 closeButton.Text = "x"
 closeButton.Font = Enum.Font.GothamBold
 closeButton.TextSize = 24
-closeButton.TextColor3 = Color3.fromRGB(255, 0, 0) -- red text
+closeButton.TextColor3 = Color3.fromRGB(255, 0, 0)  -- Red text
 closeButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 closeButton.BorderSizePixel = 0
 closeButton.Size = UDim2.new(0, 30, 0, 30)
@@ -97,35 +99,47 @@ local closeUICorner = Instance.new("UICorner")
 closeUICorner.CornerRadius = UDim.new(0, 6)
 closeUICorner.Parent = closeButton
 
--- Launch button
-local launchButton = Instance.new("TextButton")
-launchButton.Text = "🚀 Launch"
-launchButton.Font = Enum.Font.GothamBold
-launchButton.TextSize = 20
-launchButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-launchButton.BackgroundColor3 = Color3.fromRGB(77, 0, 153) -- dark purple
-launchButton.BorderSizePixel = 0
-launchButton.Size = UDim2.new(0, 160, 0, 44)
-launchButton.Position = UDim2.new(0.5, -80, 0.5, 10)
-launchButton.Parent = frame
+-- Legit button (previously "Launch")
+local legitButton = Instance.new("TextButton")
+legitButton.Text = "🚀 Legit"
+legitButton.Font = Enum.Font.GothamBold
+legitButton.TextSize = 20
+legitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+legitButton.BackgroundColor3 = Color3.fromRGB(77, 0, 153)  -- Dark purple
+legitButton.BorderSizePixel = 0
+legitButton.Size = UDim2.new(0, 160, 0, 40)  -- Adjusted size
+legitButton.Position = UDim2.new(0.5, -80, 0, 45)  -- Positioned inside the frame
+legitButton.Parent = frame
 
-local launchUICorner = Instance.new("UICorner")
-launchUICorner.CornerRadius = UDim.new(0, 12)
-launchUICorner.Parent = launchButton
+local legitUICorner = Instance.new("UICorner")
+legitUICorner.CornerRadius = UDim.new(0, 12)
+legitUICorner.Parent = legitButton
 
--- Variables for minimize toggle
+-- Op button
+local opButton = Instance.new("TextButton")
+opButton.Text = "👑 Op"
+opButton.Font = Enum.Font.GothamBold
+opButton.TextSize = 20
+opButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+opButton.BackgroundColor3 = Color3.fromRGB(0, 77, 255)  -- Blue
+opButton.BorderSizePixel = 0
+opButton.Size = UDim2.new(0, 160, 0, 40)  -- Adjusted size
+opButton.Position = UDim2.new(0.5, -80, 0, 95)  -- Positioned inside the frame
+opButton.Parent = frame
+
+local opUICorner = Instance.new("UICorner")
+opUICorner.CornerRadius = UDim.new(0, 12)
+opUICorner.Parent = opButton
+
+-- Minimize functionality
 local minimized = false
 local originalSize = frame.Size
 
 local function toggleMinimize()
 	minimized = not minimized
-	if minimized then
-		frame.Size = UDim2.new(0, 320, 0, 40)
-		launchButton.Visible = false
-	else
-		frame.Size = originalSize
-		launchButton.Visible = true
-	end
+	frame.Size = minimized and UDim2.new(0, 320, 0, 40) or originalSize
+	legitButton.Visible = not minimized
+	opButton.Visible = not minimized
 end
 
 minimizeButton.MouseButton1Click:Connect(toggleMinimize)
@@ -133,6 +147,7 @@ closeButton.MouseButton1Click:Connect(function()
 	frame.Visible = false
 end)
 
+-- Keyboard shortcut to minimize
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	if gameProcessed then return end
 	if input.KeyCode == Enum.KeyCode.LeftControl then
@@ -140,12 +155,21 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
 	end
 end)
 
-launchButton.MouseButton1Click:Connect(function()
-	print("Launch clicked!")
-	-- Your launch function here
+-- Legit button functionality (Milk Magnet V2)
+legitButton.MouseButton1Click:Connect(function()
+	print("Legit clicked!")
+	local url = "https://raw.githubusercontent.com/tedwhanga/robl-gui/refs/heads/main/milk%20magnet%20v2"
+	loadstring(game:HttpGet(url))()
 end)
 
--- Draggable functionality for titleBar
+-- Op button functionality (Milk Spawner V2)
+opButton.MouseButton1Click:Connect(function()
+	print("Op clicked!")
+	local url = "https://raw.githubusercontent.com/tedwhanga/robl-gui/refs/heads/main/milk%20spawner%20v2"
+	loadstring(game:HttpGet(url))()
+end)
+
+-- Draggable functionality
 local dragging = false
 local dragInput, mousePos, framePos
 
